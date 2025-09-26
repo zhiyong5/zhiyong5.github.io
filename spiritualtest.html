@@ -1,0 +1,1934 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>属灵途径测试</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #3B82F6;
+            --primary-dark: #2563EB;
+            --secondary: #64748B;
+            --light: #F8FAFC;
+            --dark: #1E293B;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+            --card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.03);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background-color: #F1F5F9;
+            color: var(--dark);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            color: var(--dark);
+            margin-bottom: 10px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            color: var(--secondary);
+            font-size: 1.1rem;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .score-guide {
+            background-color: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: var(--card-shadow);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .score-guide h3 {
+            color: var(--dark);
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .score-guide h3 i {
+            margin-right: 10px;
+            color: var(--primary);
+        }
+
+        .score-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .score-option {
+            background: var(--light);
+            padding: 15px 20px;
+            border-radius: 8px;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            transition: var(--transition);
+        }
+
+        .score-option:hover {
+            transform: translateY(-2px);
+            border-color: var(--primary);
+        }
+
+        .score-option .score {
+            font-weight: 700;
+            color: var(--primary);
+            margin-right: 8px;
+        }
+
+        .questions-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .question-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: var(--card-shadow);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            opacity: 1;
+        }
+
+        .question-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
+        }
+
+        .question-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background-color: var(--primary);
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .question-card:hover::before {
+            opacity: 1;
+        }
+
+        /* 未答题高亮样式 */
+        .question-card.unanswered {
+            border-color: var(--danger);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.2);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+            }
+        }
+
+        .question-header {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 18px;
+        }
+
+        .question-number {
+            background-color: var(--primary);
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+
+        .question-card.unanswered .question-number {
+            background-color: var(--danger);
+        }
+
+        .question-text {
+            font-size: 1.05rem;
+            color: var(--dark);
+            flex-grow: 1;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        .option {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            background: var(--light);
+            border-radius: 8px;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .option:hover {
+            background-color: rgba(59, 130, 246, 0.05);
+            border-color: rgba(59, 130, 246, 0.2);
+        }
+
+        .option input[type="radio"] {
+            margin-right: 12px;
+            width: 18px;
+            height: 18px;
+            accent-color: var(--primary);
+        }
+
+        .option span {
+            color: var(--dark);
+            font-size: 0.95rem;
+            transition: var(--transition);
+        }
+
+        .option input[type="radio"]:checked + span {
+            color: var(--primary);
+            font-weight: 500;
+        }
+
+        .submit-btn {
+            display: block;
+            width: 220px;
+            height: 55px;
+            margin: 0 auto 60px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.05rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .submit-btn:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.2);
+        }
+
+        .submit-btn i {
+            font-size: 1.1rem;
+        }
+
+        .chart-container {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: var(--card-shadow);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            margin-top: 20px;
+            height: 500px;
+        }
+
+        .chart-header {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .chart-header h2 {
+            font-size: 1.5rem;
+            color: var(--dark);
+            margin-bottom: 8px;
+        }
+
+        .chart-header p {
+            color: var(--secondary);
+            font-size: 0.95rem;
+        }
+
+        .progress-container {
+            margin: 40px 0;
+            position: sticky;
+            top: 20px;
+            z-index: 10;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background-color: rgba(0, 0, 0, 0.05);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: var(--primary);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+            font-size: 0.85rem;
+            color: var(--secondary);
+        }
+
+        /* 错误提示样式 */
+        .error-message {
+            color: var(--danger);
+            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            background-color: rgba(239, 68, 68, 0.1);
+            border-radius: 8px;
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px 15px;
+            }
+
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            .submit-btn {
+                width: 100%;
+                max-width: 220px;
+            }
+
+            .chart-container {
+                height: 400px;
+                padding: 20px 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>属灵途径测试</h1>
+            <p class="subtitle">通过以下49道题，探索您与上帝连接的主要方式和倾向</p>
+        </header>
+
+        <!-- 进度条 -->
+        <div class="progress-container">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="progress-text">
+                <span id="progressCount">0/49 题</span>
+                <span id="progressPercent">0%</span>
+            </div>
+        </div>
+
+        <!-- 错误提示 -->
+        <div class="error-message" id="errorMessage">
+            <i class="fa fa-exclamation-circle"></i> 您有未完成的题目，请完成后再提交
+        </div>
+
+        <!-- 评分说明 -->
+        <div class="score-guide">
+            <h3><i class="fa fa-info-circle"></i> 评分标准</h3>
+            <div class="score-options">
+                <div class="score-option">
+                    <span class="score">0</span>
+                    <span>从不/从来没发生在我身上</span>
+                </div>
+                <div class="score-option">
+                    <span class="score">1</span>
+                    <span>偶尔/有时我是这样</span>
+                </div>
+                <div class="score-option">
+                    <span class="score">2</span>
+                    <span>经常/通常我是这样</span>
+                </div>
+                <div class="score-option">
+                    <span class="score">3</span>
+                    <span>始终/这就是我</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 测试表单 - 包含所有49道题 -->
+        <form id="testForm">
+            <div class="questions-container">
+                <!-- 题目1：关系 -->
+                <div class="question-card" data-question="1">
+                    <div class="question-header">
+                        <div class="question-number">1</div>
+                        <div class="question-text">当我遇到问题时，我更喜欢与人一起祷告，而不是独自祷告。</div>
+                    </div>
+                    <div class="options">
+                        <label class="option">
+                            <input type="radio" name="question_1" value="0">
+                            <span>0：从不/从来没发生在我身上</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_1" value="1">
+                            <span>1：偶尔/有时我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_1" value="2">
+                            <span>2：经常/通常我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_1" value="3">
+                            <span>3：始终/这就是我</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 题目2：知识 -->
+                <div class="question-card" data-question="2">
+                    <div class="question-header">
+                        <div class="question-number">2</div>
+                        <div class="question-text">在教堂的礼拜中，我最期待讲道教导的部分。</div>
+                    </div>
+                    <div class="options">
+                        <label class="option">
+                            <input type="radio" name="question_2" value="0">
+                            <span>0：从不/从来没发生在我身上</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_2" value="1">
+                            <span>1：偶尔/有时我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_2" value="2">
+                            <span>2：经常/通常我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_2" value="3">
+                            <span>3：始终/这就是我</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 题目3：敬拜 -->
+                <div class="question-card" data-question="3">
+                    <div class="question-header">
+                        <div class="question-number">3</div>
+                        <div class="question-text">认识我的人认为我在敬拜期间很热情。</div>
+                    </div>
+                    <div class="options">
+                        <label class="option">
+                            <input type="radio" name="question_3" value="0">
+                            <span>0：从不/从来没发生在我身上</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_3" value="1">
+                            <span>1：偶尔/有时我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_3" value="2">
+                            <span>2：经常/通常我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_3" value="3">
+                            <span>3：始终/这就是我</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 题目4：变革者 -->
+                <div class="question-card" data-question="4">
+                    <div class="question-header">
+                        <div class="question-number">4</div>
+                        <div class="question-text">不管我有多疲倦，当挑战摆在我面前时，我通常就活了过来。</div>
+                    </div>
+                    <div class="options">
+                        <label class="option">
+                            <input type="radio" name="question_4" value="0">
+                            <span>0：从不/从来没发生在我身上</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_4" value="1">
+                            <span>1：偶尔/有时我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_4" value="2">
+                            <span>2：经常/通常我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_4" value="3">
+                            <span>3：始终/这就是我</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 题目5：默想 -->
+                <div class="question-card" data-question="5">
+                    <div class="question-header">
+                        <div class="question-number">5</div>
+                        <div class="question-text">对我来说，属灵世界有时候比现实世界更真实。</div>
+                    </div>
+                    <div class="options">
+                        <label class="option">
+                            <input type="radio" name="question_5" value="0">
+                            <span>0：从不/从来没发生在我身上</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_5" value="1">
+                            <span>1：偶尔/有时我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_5" value="2">
+                            <span>2：经常/通常我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_5" value="3">
+                            <span>3：始终/这就是我</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 题目6：服务/服侍 -->
+                <div class="question-card" data-question="6">
+                    <div class="question-header">
+                        <div class="question-number">6</div>
+                        <div class="question-text">在会议或服侍中，我就容易因为注意到周围有些没有注意到的细节而分心。</div>
+                    </div>
+                    <div class="options">
+                        <label class="option">
+                            <input type="radio" name="question_6" value="0">
+                            <span>0：从不/从来没发生在我身上</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_6" value="1">
+                            <span>1：偶尔/有时我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_6" value="2">
+                            <span>2：经常/通常我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_6" value="3">
+                            <span>3：始终/这就是我</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 题目7：创造 -->
+                <div class="question-card" data-question="7">
+                    <div class="question-header">
+                        <div class="question-number">7</div>
+                        <div class="question-text">美丽的日落可以给我一种属灵的高峰感，甚至能短暂遮盖困扰我的一切。</div>
+                    </div>
+                    <div class="options">
+                        <label class="option">
+                            <input type="radio" name="question_7" value="0">
+                            <span>0：从不/从来没发生在我身上</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_7" value="1">
+                            <span>1：偶尔/有时我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_7" value="2">
+                            <span>2：经常/通常我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_7" value="3">
+                            <span>3：始终/这就是我</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 题目8：关系 -->
+                <div class="question-card" data-question="8">
+                    <div class="question-header">
+                        <div class="question-number">8</div>
+                        <div class="question-text">和自己认识的、喜欢的人一起出去玩会让我感觉更好。</div>
+                    </div>
+                    <div class="options">
+                        <label class="option">
+                            <input type="radio" name="question_8" value="0">
+                            <span>0：从不/从来没发生在我身上</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_8" value="1">
+                            <span>1：偶尔/有时我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_8" value="2">
+                            <span>2：经常/通常我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_8" value="3">
+                            <span>3：始终/这就是我</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 题目9：知识 -->
+                <div class="question-card" data-question="9">
+                    <div class="question-header">
+                        <div class="question-number">9</div>
+                        <div class="question-text">我一直不明白为什么人们不喜欢深入学习圣经。</div>
+                    </div>
+                    <div class="options">
+                        <label class="option">
+                            <input type="radio" name="question_9" value="0">
+                            <span>0：从不/从来没发生在我身上</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_9" value="1">
+                            <span>1：偶尔/有时我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_9" value="2">
+                            <span>2：经常/通常我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_9" value="3">
+                            <span>3：始终/这就是我</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 题目10：敬拜 -->
+                <div class="question-card" data-question="10">
+                    <div class="question-header">
+                        <div class="question-number">10</div>
+                        <div class="question-text">每当我与其他信徒聚会赞美时，上帝就会感动我。</div>
+                    </div>
+                    <div class="options">
+                        <label class="option">
+                            <input type="radio" name="question_10" value="0">
+                            <span>0：从不/从来没发生在我身上</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_10" value="1">
+                            <span>1：偶尔/有时我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_10" value="2">
+                            <span>2：经常/通常我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_10" value="3">
+                            <span>3：始终/这就是我</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 题目11：变革者 -->
+                <div class="question-card" data-question="11">
+                    <div class="question-header">
+                        <div class="question-number">11</div>
+                        <div class="question-text">我周围的人都知道我对自己参与其中的事业有多热情。</div>
+                    </div>
+                    <div class="options">
+                        <label class="option">
+                            <input type="radio" name="question_11" value="0">
+                            <span>0：从不/从来没发生在我身上</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_11" value="1">
+                            <span>1：偶尔/有时我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_11" value="2">
+                            <span>2：经常/通常我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_11" value="3">
+                            <span>3：始终/这就是我</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 题目12：默想 -->
+                <div class="question-card" data-question="12">
+                    <div class="question-header">
+                        <div class="question-number">12</div>
+                        <div class="question-text">当我在安静的、没有分心的地方时，我会感到内心深处的快乐。</div>
+                    </div>
+                    <div class="options">
+                        <label class="option">
+                            <input type="radio" name="question_12" value="0">
+                            <span>0：从不/从来没发生在我身上</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_12" value="1">
+                            <span>1：偶尔/有时我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_12" value="2">
+                            <span>2：经常/通常我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_12" value="3">
+                            <span>3：始终/这就是我</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 题目13：服务/服侍 -->
+                <div class="question-card" data-question="13">
+                    <div class="question-header">
+                        <div class="question-number">13</div>
+                        <div class="question-text">即使自己遇到问题，帮助他人也很容易。</div>
+                    </div>
+                    <div class="options">
+                        <label class="option">
+                            <input type="radio" name="question_13" value="0">
+                            <span>0：从不/从来没发生在我身上</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_13" value="1">
+                            <span>1：偶尔/有时我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_13" value="2">
+                            <span>2：经常/通常我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_13" value="3">
+                            <span>3：始终/这就是我</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 题目14：创造 -->
+                <div class="question-card" data-question="14">
+                    <div class="question-header">
+                        <div class="question-number">14</div>
+                        <div class="question-text">面对一个艰难的决定时，我倾向于去树林，沙滩或其他户外环境中散步。</div>
+                    </div>
+                    <div class="options">
+                        <label class="option">
+                            <input type="radio" name="question_14" value="0">
+                            <span>0：从不/从来没发生在我身上</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_14" value="1">
+                            <span>1：偶尔/有时我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_14" value="2">
+                            <span>2：经常/通常我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_14" value="3">
+                            <span>3：始终/这就是我</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 题目15：关系 -->
+                <div class="question-card" data-question="15">
+                    <div class="question-header">
+                        <div class="question-number">15</div>
+                        <div class="question-text">当我太久一个人时，我往往会精疲力竭或变得有些沮丧。</div>
+                    </div>
+                    <div class="options">
+                        <label class="option">
+                            <input type="radio" name="question_15" value="0">
+                            <span>0：从不/从来没发生在我身上</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_15" value="1">
+                            <span>1：偶尔/有时我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_15" value="2">
+                            <span>2：经常/通常我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_15" value="3">
+                            <span>3：始终/这就是我</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 题目16：知识 -->
+                <div class="question-card" data-question="16">
+                    <div class="question-header">
+                        <div class="question-number">16</div>
+                        <div class="question-text">当人们需要圣经问题的答案时，他们会寻找我。</div>
+                    </div>
+                    <div class="options">
+                        <label class="option">
+                            <input type="radio" name="question_16" value="0">
+                            <span>0：从不/从来没发生在我身上</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_16" value="1">
+                            <span>1：偶尔/有时我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_16" value="2">
+                            <span>2：经常/通常我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_16" value="3">
+                            <span>3：始终/这就是我</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 题目17：敬拜 -->
+                <div class="question-card" data-question="17">
+                    <div class="question-header">
+                        <div class="question-number">17</div>
+                        <div class="question-text">即使我很累，我也期待去教堂做礼拜。</div>
+                    </div>
+                    <div class="options">
+                        <label class="option">
+                            <input type="radio" name="question_17" value="0">
+                            <span>0：从不/从来没发生在我身上</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_17" value="1">
+                            <span>1：偶尔/有时我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_17" value="2">
+                            <span>2：经常/通常我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_17" value="3">
+                            <span>3：始终/这就是我</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 题目18：变革者 -->
+                <div class="question-card" data-question="18">
+                    <div class="question-header">
+                        <div class="question-number">18</div>
+                        <div class="question-text">当我做神的工作时，我最能感受到神的同在。</div>
+                    </div>
+                    <div class="options">
+                        <label class="option">
+                            <input type="radio" name="question_18" value="0">
+                            <span>0：从不/从来没发生在我身上</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_18" value="1">
+                            <span>1：偶尔/有时我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_18" value="2">
+                            <span>2：经常/通常我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_18" value="3">
+                            <span>3：始终/这就是我</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 题目19：默想 -->
+                <div class="question-card" data-question="19">
+                    <div class="question-header">
+                        <div class="question-number">19</div>
+                        <div class="question-text">我不明白基督徒怎么能在如此忙碌的状态下，仍然认为他们正在聆听着上帝。</div>
+                    </div>
+                    <div class="options">
+                        <label class="option">
+                            <input type="radio" name="question_19" value="0">
+                            <span>0：从不/从来没发生在我身上</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_19" value="1">
+                            <span>1：偶尔/有时我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_19" value="2">
+                            <span>2：经常/通常我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_19" value="3">
+                            <span>3：始终/这就是我</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 题目20：服务/服侍 -->
+                <div class="question-card" data-question="20">
+                    <div class="question-header">
+                        <div class="question-number">20</div>
+                        <div class="question-text">我喜欢能够在聚光灯外的幕后服侍。</div>
+                    </div>
+                    <div class="options">
+                        <label class="option">
+                            <input type="radio" name="question_20" value="0">
+                            <span>0：从不/从来没发生在我身上</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_20" value="1">
+                            <span>1：偶尔/有时我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_20" value="2">
+                            <span>2：经常/通常我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_20" value="3">
+                            <span>3：始终/这就是我</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 题目21：创造 -->
+                <div class="question-card" data-question="21">
+                    <div class="question-header">
+                        <div class="question-number">21</div>
+                        <div class="question-text">我在大自然中体验上帝的力量是如此之大，以至于有时我忍不住不去教堂了。</div>
+                    </div>
+                    <div class="options">
+                        <label class="option">
+                            <input type="radio" name="question_21" value="0">
+                            <span>0：从不/从来没发生在我身上</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_21" value="1">
+                            <span>1：偶尔/有时我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_21" value="2">
+                            <span>2：经常/通常我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_21" value="3">
+                            <span>3：始终/这就是我</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 题目22：关系 -->
+                <div class="question-card" data-question="22">
+                    <div class="question-header">
+                        <div class="question-number">22</div>
+                        <div class="question-text">我在与其他几个人的交通中最真切地体验到神。</div>
+                    </div>
+                    <div class="options">
+                        <label class="option">
+                            <input type="radio" name="question_22" value="0">
+                            <span>0：从不/从来没发生在我身上</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_22" value="1">
+                            <span>1：偶尔/有时我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_22" value="2">
+                            <span>2：经常/通常我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_22" value="3">
+                            <span>3：始终/这就是我</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 题目23：知识 -->
+                <div class="question-card" data-question="23">
+                    <div class="question-header">
+                        <div class="question-number">23</div>
+                        <div class="question-text">当我需要重新振作时，一本刺激/有启发的书就是最好的选择。</div>
+                    </div>
+                    <div class="options">
+                        <label class="option">
+                            <input type="radio" name="question_23" value="0">
+                            <span>0：从不/从来没发生在我身上</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_23" value="1">
+                            <span>1：偶尔/有时我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_23" value="2">
+                            <span>2：经常/通常我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_23" value="3">
+                            <span>3：始终/这就是我</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 题目24：敬拜 -->
+                <div class="question-card" data-question="24">
+                    <div class="question-header">
+                        <div class="question-number">24</div>
+                        <div class="question-text">当我与他人一起赞美上帝时，我最快乐。</div>
+                    </div>
+                    <div class="options">
+                        <label class="option">
+                            <input type="radio" name="question_24" value="0">
+                            <span>0：从不/从来没发生在我身上</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_24" value="1">
+                            <span>1：偶尔/有时我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_24" value="2">
+                            <span>2：经常/通常我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_24" value="3">
+                            <span>3：始终/这就是我</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 题目25：变革者 -->
+                <div class="question-card" data-question="25">
+                    <div class="question-header">
+                        <div class="question-number">25</div>
+                        <div class="question-text">“当进展受阻，阻碍本身也在进展”（负伤前进？参左边英语）–这是我很好的写照</div>
+                    </div>
+                    <div class="options">
+                        <label class="option">
+                            <input type="radio" name="question_25" value="0">
+                            <span>0：从不/从来没发生在我身上</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_25" value="1">
+                            <span>1：偶尔/有时我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_25" value="2">
+                            <span>2：经常/通常我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_25" value="3">
+                            <span>3：始终/这就是我</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 题目26：默想 -->
+                <div class="question-card" data-question="26">
+                    <div class="question-header">
+                        <div class="question-number">26</div>
+                        <div class="question-text">我的家人和朋友有时嘲笑我是个隐士/修士/修女。</div>
+                    </div>
+                    <div class="options">
+                        <label class="option">
+                            <input type="radio" name="question_26" value="0">
+                            <span>0：从不/从来没发生在我身上</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_26" value="1">
+                            <span>1：偶尔/有时我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_26" value="2">
+                            <span>2：经常/通常我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_26" value="3">
+                            <span>3：始终/这就是我</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 题目27：服务/服侍 -->
+                <div class="question-card" data-question="27">
+                    <div class="question-header">
+                        <div class="question-number">27</div>
+                        <div class="question-text">我周围的人有时会告诉我他们钦佩我的同情心。</div>
+                    </div>
+                    <div class="options">
+                        <label class="option">
+                            <input type="radio" name="question_27" value="0">
+                            <span>0：从不/从来没发生在我身上</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_27" value="1">
+                            <span>1：偶尔/有时我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_27" value="2">
+                            <span>2：经常/通常我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_27" value="3">
+                            <span>3：始终/这就是我</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 题目28：创造 -->
+                <div class="question-card" data-question="28">
+                    <div class="question-header">
+                        <div class="question-number">28</div>
+                        <div class="question-text">自然界中的事物常常教给我关于上帝的宝贵功课。</div>
+                    </div>
+                    <div class="options">
+                        <label class="option">
+                            <input type="radio" name="question_28" value="0">
+                            <span>0：从不/从来没发生在我身上</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_28" value="1">
+                            <span>1：偶尔/有时我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_28" value="2">
+                            <span>2：经常/通常我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_28" value="3">
+                            <span>3：始终/这就是我</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 题目29：关系 -->
+                <div class="question-card" data-question="29">
+                    <div class="question-header">
+                        <div class="question-number">29</div>
+                        <div class="question-text">我真搞不懂那些不愿透露自己个人生活的人。</div>
+                    </div>
+                    <div class="options">
+                        <label class="option">
+                            <input type="radio" name="question_29" value="0">
+                            <span>0：从不/从来没发生在我身上</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_29" value="1">
+                            <span>1：偶尔/有时我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_29" value="2">
+                            <span>2：经常/通常我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_29" value="3">
+                            <span>3：始终/这就是我</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 题目30：知识 -->
+                <div class="question-card" data-question="30">
+                    <div class="question-header">
+                        <div class="question-number">30</div>
+                        <div class="question-text">有时我花太多时间来了解一个问题，而不是去解决它。</div>
+                    </div>
+                    <div class="options">
+                        <label class="option">
+                            <input type="radio" name="question_30" value="0">
+                            <span>0：从不/从来没发生在我身上</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_30" value="1">
+                            <span>1：偶尔/有时我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_30" value="2">
+                            <span>2：经常/通常我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_30" value="3">
+                            <span>3：始终/这就是我</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 题目31：敬拜 -->
+                <div class="question-card" data-question="31">
+                    <div class="question-header">
+                        <div class="question-number">31</div>
+                        <div class="question-text">我认为错过礼拜/敬拜时间没有任何好的借口。</div>
+                    </div>
+                    <div class="options">
+                        <label class="option">
+                            <input type="radio" name="question_31" value="0">
+                            <span>0：从不/从来没发生在我身上</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_31" value="1">
+                            <span>1：偶尔/有时我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_31" value="2">
+                            <span>2：经常/通常我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_31" value="3">
+                            <span>3：始终/这就是我</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 题目32：变革者 -->
+                <div class="question-card" data-question="32">
+                    <div class="question-header">
+                        <div class="question-number">32</div>
+                        <div class="question-text">看到人们为了实现一个目标而共同努力，我感到极大的满足。</div>
+                    </div>
+                    <div class="options">
+                        <label class="option">
+                            <input type="radio" name="question_32" value="0">
+                            <span>0：从不/从来没发生在我身上</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_32" value="1">
+                            <span>1：偶尔/有时我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_32" value="2">
+                            <span>2：经常/通常我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_32" value="3">
+                            <span>3：始终/这就是我</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 题目33：默想 -->
+                <div class="question-card" data-question="33">
+                    <div class="question-header">
+                        <div class="question-number">33</div>
+                        <div class="question-text">当我遇到困难时，独自一人最有帮助。</div>
+                    </div>
+                    <div class="options">
+                        <label class="option">
+                            <input type="radio" name="question_33" value="0">
+                            <span>0：从不/从来没发生在我身上</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_33" value="1">
+                            <span>1：偶尔/有时我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_33" value="2">
+                            <span>2：经常/通常我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_33" value="3">
+                            <span>3：始终/这就是我</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 题目34：服务/服侍 -->
+                <div class="question-card" data-question="34">
+                    <div class="question-header">
+                        <div class="question-number">34</div>
+                        <div class="question-text">即使我很累，我仍然有精力和愿望去关心人们的问题。</div>
+                    </div>
+                    <div class="options">
+                        <label class="option">
+                            <input type="radio" name="question_34" value="0">
+                            <span>0：从不/从来没发生在我身上</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_34" value="1">
+                            <span>1：偶尔/有时我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_34" value="2">
+                            <span>2：经常/通常我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_34" value="3">
+                            <span>3：始终/这就是我</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 题目35：创造 -->
+                <div class="question-card" data-question="35">
+                    <div class="question-header">
+                        <div class="question-number">35</div>
+                        <div class="question-text">当我处于美丽自然的环境中时，上帝是如此真实。</div>
+                    </div>
+                    <div class="options">
+                        <label class="option">
+                            <input type="radio" name="question_35" value="0">
+                            <span>0：从不/从来没发生在我身上</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_35" value="1">
+                            <span>1：偶尔/有时我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_35" value="2">
+                            <span>2：经常/通常我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_35" value="3">
+                            <span>3：始终/这就是我</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 题目36：关系 -->
+                <div class="question-card" data-question="36">
+                    <div class="question-header">
+                        <div class="question-number">36</div>
+                        <div class="question-text">当我累的时候，没有什么比和朋友出去玩更能让我恢复精力了。</div>
+                    </div>
+                    <div class="options">
+                        <label class="option">
+                            <input type="radio" name="question_36" value="0">
+                            <span>0：从不/从来没发生在我身上</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_36" value="1">
+                            <span>1：偶尔/有时我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_36" value="2">
+                            <span>2：经常/通常我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_36" value="3">
+                            <span>3：始终/这就是我</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 题目37：知识 -->
+                <div class="question-card" data-question="37">
+                    <div class="question-header">
+                        <div class="question-number">37</div>
+                        <div class="question-text">当神学真理被清晰解释，我能最好地敬拜神。</div>
+                    </div>
+                    <div class="options">
+                        <label class="option">
+                            <input type="radio" name="question_37" value="0">
+                            <span>0：从不/从来没发生在我身上</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_37" value="1">
+                            <span>1：偶尔/有时我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_37" value="2">
+                            <span>2：经常/通常我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_37" value="3">
+                            <span>3：始终/这就是我</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 题目38：敬拜 -->
+                <div class="question-card" data-question="38">
+                    <div class="question-header">
+                        <div class="question-number">38</div>
+                        <div class="question-text">我喜欢在教堂里赞美上帝时，世界上所有问题-包括我的问题-似乎都不重要了。</div>
+                    </div>
+                    <div class="options">
+                        <label class="option">
+                            <input type="radio" name="question_38" value="0">
+                            <span>0：从不/从来没发生在我身上</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_38" value="1">
+                            <span>1：偶尔/有时我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_38" value="2">
+                            <span>2：经常/通常我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_38" value="3">
+                            <span>3：始终/这就是我</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 题目39：变革者 -->
+                <div class="question-card" data-question="39">
+                    <div class="question-header">
+                        <div class="question-number">39</div>
+                        <div class="question-text">面对不公正，我对人们的冷漠感到沮丧。</div>
+                    </div>
+                    <div class="options">
+                        <label class="option">
+                            <input type="radio" name="question_39" value="0">
+                            <span>0：从不/从来没发生在我身上</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_39" value="1">
+                            <span>1：偶尔/有时我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_39" value="2">
+                            <span>2：经常/通常我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_39" value="3">
+                            <span>3：始终/这就是我</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 题目40：默想 -->
+                <div class="question-card" data-question="40">
+                    <div class="question-header">
+                        <div class="question-number">40</div>
+                        <div class="question-text">说实话，我有时会因为太喜欢安静和孤独而感到内疚。</div>
+                    </div>
+                    <div class="options">
+                        <label class="option">
+                            <input type="radio" name="question_40" value="0">
+                            <span>0：从不/从来没发生在我身上</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_40" value="1">
+                            <span>1：偶尔/有时我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_40" value="2">
+                            <span>2：经常/通常我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_40" value="3">
+                            <span>3：始终/这就是我</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 题目41：服务/服侍 -->
+                <div class="question-card" data-question="41">
+                    <div class="question-header">
+                        <div class="question-number">41</div>
+                        <div class="question-text">当我找到真正需要帮助的人并介入提供帮助时，我最高兴。</div>
+                    </div>
+                    <div class="options">
+                        <label class="option">
+                            <input type="radio" name="question_41" value="0">
+                            <span>0：从不/从来没发生在我身上</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_41" value="1">
+                            <span>1：偶尔/有时我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_41" value="2">
+                            <span>2：经常/通常我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_41" value="3">
+                            <span>3：始终/这就是我</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 题目42：创造 -->
+                <div class="question-card" data-question="42">
+                    <div class="question-header">
+                        <div class="question-number">42</div>
+                        <div class="question-text">其他人知道，如果我不在身边，我很可能在外面一个美丽的地方。</div>
+                    </div>
+                    <div class="options">
+                        <label class="option">
+                            <input type="radio" name="question_42" value="0">
+                            <span>0：从不/从来没发生在我身上</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_42" value="1">
+                            <span>1：偶尔/有时我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_42" value="2">
+                            <span>2：经常/通常我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_42" value="3">
+                            <span>3：始终/这就是我</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 题目43：关系 -->
+                <div class="question-card" data-question="43">
+                    <div class="question-header">
+                        <div class="question-number">43</div>
+                        <div class="question-text">我周围的人说我是一个善于交际的人。</div>
+                    </div>
+                    <div class="options">
+                        <label class="option">
+                            <input type="radio" name="question_43" value="0">
+                            <span>0：从不/从来没发生在我身上</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_43" value="1">
+                            <span>1：偶尔/有时我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_43" value="2">
+                            <span>2：经常/通常我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_43" value="3">
+                            <span>3：始终/这就是我</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 题目44：知识 -->
+                <div class="question-card" data-question="44">
+                    <div class="question-header">
+                        <div class="question-number">44</div>
+                        <div class="question-text">我经常阅读很多书籍或文章，以帮助我解决问题。</div>
+                    </div>
+                    <div class="options">
+                        <label class="option">
+                            <input type="radio" name="question_44" value="0">
+                            <span>0：从不/从来没发生在我身上</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_44" value="1">
+                            <span>1：偶尔/有时我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_44" value="2">
+                            <span>2：经常/通常我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_44" value="3">
+                            <span>3：始终/这就是我</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 题目45：敬拜 -->
+                <div class="question-card" data-question="45">
+                    <div class="question-header">
+                        <div class="question-number">45</div>
+                        <div class="question-text">当我不知所措时，没有什么比优质的敬拜能让我重回正轨了。</div>
+                    </div>
+                    <div class="options">
+                        <label class="option">
+                            <input type="radio" name="question_45" value="0">
+                            <span>0：从不/从来没发生在我身上</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_45" value="1">
+                            <span>1：偶尔/有时我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_45" value="2">
+                            <span>2：经常/通常我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_45" value="3">
+                            <span>3：始终/这就是我</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 题目46：变革者 -->
+                <div class="question-card" data-question="46">
+                    <div class="question-header">
+                        <div class="question-number">46</div>
+                        <div class="question-text">我可能应该花更多的时间放慢脚步，但我真的很喜欢我的工作，尤其是事工。</div>
+                    </div>
+                    <div class="options">
+                        <label class="option">
+                            <input type="radio" name="question_46" value="0">
+                            <span>0：从不/从来没发生在我身上</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_46" value="1">
+                            <span>1：偶尔/有时我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_46" value="2">
+                            <span>2：经常/通常我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_46" value="3">
+                            <span>3：始终/这就是我</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 题目47：默想 -->
+                <div class="question-card" data-question="47">
+                    <div class="question-header">
+                        <div class="question-number">47</div>
+                        <div class="question-text">有时我会花太多时间来反复思考人们对我的负面评论。</div>
+                    </div>
+                    <div class="options">
+                        <label class="option">
+                            <input type="radio" name="question_47" value="0">
+                            <span>0：从不/从来没发生在我身上</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_47" value="1">
+                            <span>1：偶尔/有时我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_47" value="2">
+                            <span>2：经常/通常我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_47" value="3">
+                            <span>3：始终/这就是我</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 题目48：服务/服侍 -->
+                <div class="question-card" data-question="48">
+                    <div class="question-header">
+                        <div class="question-number">48</div>
+                        <div class="question-text">当我给正在挣扎或有困难的人忠告全面时，我体验到上帝的同在。</div>
+                    </div>
+                    <div class="options">
+                        <label class="option">
+                            <input type="radio" name="question_48" value="0">
+                            <span>0：从不/从来没发生在我身上</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_48" value="1">
+                            <span>1：偶尔/有时我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_48" value="2">
+                            <span>2：经常/通常我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_48" value="3">
+                            <span>3：始终/这就是我</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 题目49：创造 -->
+                <div class="question-card" data-question="49">
+                    <div class="question-header">
+                        <div class="question-number">49</div>
+                        <div class="question-text">当我看到自然美景时，一种难以形容的奇妙感觉在我心中激荡。</div>
+                    </div>
+                    <div class="options">
+                        <label class="option">
+                            <input type="radio" name="question_49" value="0">
+                            <span>0：从不/从来没发生在我身上</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_49" value="1">
+                            <span>1：偶尔/有时我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_49" value="2">
+                            <span>2：经常/通常我是这样</span>
+                        </label>
+                        <label class="option">
+                            <input type="radio" name="question_49" value="3">
+                            <span>3：始终/这就是我</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 提交按钮 -->
+            <button type="submit" class="submit-btn">
+                <i class="fa fa-paper-plane"></i>
+                提交测试
+            </button>
+        </form>
+
+        <!-- 结果图表容器 -->
+        <div class="chart-container">
+            <div class="chart-header">
+                <h2>属灵途径测试结果</h2>
+                <p>各类型得分越高，表示您越倾向于该属灵途径</p>
+            </div>
+            <canvas id="resultChart"></canvas>
+        </div>
+    </div>
+
+    <!-- 分数计算与图表渲染脚本 -->
+    <script>
+        // 定义各题目对应的属灵途径类型
+        const questionTypes = {
+            1: "关系", 2: "知识", 3: "敬拜", 4: "变革者", 5: "默想",
+            6: "服务/服侍", 7: "创造", 8: "关系", 9: "知识", 10: "敬拜",
+            11: "变革者", 12: "默想", 13: "服务/服侍", 14: "创造", 15: "关系",
+            16: "知识", 17: "敬拜", 18: "变革者", 19: "默想", 20: "服务/服侍",
+            21: "创造", 22: "关系", 23: "知识", 24: "敬拜", 25: "变革者",
+            26: "默想", 27: "服务/服侍", 28: "创造", 29: "关系", 30: "知识",
+            31: "敬拜", 32: "变革者", 33: "默想", 34: "服务/服侍", 35: "创造",
+            36: "关系", 37: "知识", 38: "敬拜", 39: "变革者", 40: "默想",
+            41: "服务/服侍", 42: "创造", 43: "关系", 44: "知识", 45: "敬拜",
+            46: "变革者", 47: "默想", 48: "服务/服侍", 49: "创造"
+        };
+
+        // 更新进度条和未答题样式
+        function updateProgress() {
+            let answeredCount = 0;
+            
+            // 移除所有未答题样式
+            document.querySelectorAll('.question-card.unanswered').forEach(card => {
+                card.classList.remove('unanswered');
+            });
+            
+            // 计算已回答的题目数量并标记未答题
+            for (let i = 1; i <= 49; i++) {
+                const questionName = `question_${i}`;
+                const selectedOption = document.querySelector(`input[name="${questionName}"]:checked`);
+                const questionCard = document.querySelector(`.question-card[data-question="${i}"]`);
+                
+                if (selectedOption) {
+                    answeredCount++;
+                } else if (questionCard) {
+                    questionCard.classList.add('unanswered');
+                }
+            }
+            
+            // 计算百分比
+            const percentage = Math.round((answeredCount / 49) * 100);
+            
+            // 更新进度条和文本
+            document.getElementById('progressFill').style.width = `${percentage}%`;
+            document.getElementById('progressCount').textContent = `${answeredCount}/49 题`;
+            document.getElementById('progressPercent').textContent = `${percentage}%`;
+            
+            // 隐藏错误提示
+            document.getElementById('errorMessage').style.display = 'none';
+        }
+
+        // 检查是否所有问题都已回答，并返回第一个未答题
+        function findFirstUnanswered() {
+            for (let i = 1; i <= 49; i++) {
+                const questionName = `question_${i}`;
+                const selectedOption = document.querySelector(`input[name="${questionName}"]:checked`);
+                if (!selectedOption) {
+                    return document.querySelector(`.question-card[data-question="${i}"]`);
+                }
+            }
+            return null; // 所有问题都已回答
+        }
+
+        // 监听所有单选按钮的变化，更新进度
+        document.querySelectorAll('input[type="radio"]').forEach(radio => {
+            radio.addEventListener('change', updateProgress);
+        });
+
+        // 表单提交事件
+        document.getElementById('testForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            // 检查是否有未回答的问题
+            const firstUnanswered = findFirstUnanswered();
+            if (firstUnanswered) {
+                // 显示错误提示
+                const errorElement = document.getElementById('errorMessage');
+                errorElement.style.display = 'block';
+                
+                // 高亮显示第一个未答题并滚动到该位置
+                firstUnanswered.classList.add('unanswered');
+                firstUnanswered.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                
+                return;
+            }
+
+            // 1. 计算各属灵途径的总分
+            const scores = {
+                "关系": 0, "知识": 0, "敬拜": 0,
+                "变革者": 0, "默想": 0, "服务/服侍": 0, "创造": 0
+            };
+
+            // 遍历所有49道题，累加对应类型的分数
+            for (let i = 1; i <= 49; i++) {
+                const questionName = `question_${i}`;
+                const selectedValue = parseInt(document.querySelector(`input[name="${questionName}"]:checked`).value);
+                const type = questionTypes[i];
+                scores[type] += selectedValue;
+            }
+
+            // 2. 渲染图表
+            const ctx = document.getElementById('resultChart').getContext('2d');
+            
+            // 若已有图表实例，先销毁
+            if (window.resultChartInstance) {
+                window.resultChartInstance.destroy();
+            }
+
+            // 创建新图表，添加顶部数值标签
+           
+		   window.resultChartInstance = new Chart(ctx, {
+		       type: 'bar',
+		       data: {
+		           labels: Object.keys(scores),
+		           datasets: [{
+		               label: '各属灵途径得分',
+		               data: Object.values(scores),
+		               backgroundColor: [
+		                   'rgba(59, 130, 246, 0.7)',  // 关系：蓝
+		                   'rgba(16, 185, 129, 0.7)',  // 知识：绿
+		                   'rgba(245, 158, 11, 0.7)',  // 敬拜：黄
+		                   'rgba(239, 68, 68, 0.7)',   // 变革者：红
+		                   'rgba(139, 92, 246, 0.7)',  // 默想：紫
+		                   'rgba(0, 179, 134, 0.7)',   // 服务/服侍：青
+		                   'rgba(100, 116, 139, 0.7)'  // 创造：灰蓝
+		               ],
+		               borderColor: [
+		                   'rgba(59, 130, 246, 1)',
+		                   'rgba(16, 185, 129, 1)',
+		                   'rgba(245, 158, 11, 1)',
+		                   'rgba(239, 68, 68, 1)',
+		                   'rgba(139, 92, 246, 1)',
+		                   'rgba(0, 179, 134, 1)',
+		                   'rgba(100, 116, 139, 1)'
+		               ],
+		               borderWidth: 1,
+		               borderRadius: 6
+		           }]
+		       },
+		       options: {
+		           responsive: true,
+		           maintainAspectRatio: false,
+		           animation: {
+		               duration: 2000,
+		               easing: 'easeOutQuart'
+		           },
+		           scales: {
+		               y: {
+		                   beginAtZero: true,
+		                   title: {
+		                       display: true,
+		                       text: '分数',
+		                       font: { size: 14, weight: 'bold' },
+		                       color: '#1E293B'
+		                   },
+		                   ticks: {
+		                       stepSize: 1,
+							   max: 25,
+							   suggestedMax: 25
+		                   },
+						   // 新增：强制纵轴范围从0到25
+						   min: 0,
+						   max: 25,
+		                   grid: {
+		                       color: 'rgba(0, 0, 0, 0.05)'
+		                   }
+		               },
+		               x: {
+		                   title: {
+		                       display: true,
+		                       text: '属灵途径类型',
+		                       font: { size: 14, weight: 'bold' },
+		                       color: '#1E293B'
+		                   },
+		                   grid: {
+		                       display: false
+		                   }
+		               }
+		           },
+		           plugins: {
+		               tooltip: {
+		                   enabled: true,
+		                   backgroundColor: 'rgba(30, 41, 59, 0.9)',
+		                   titleFont: { size: 14, weight: 'bold' },
+		                   bodyFont: { size: 13 },
+		                   padding: 12,
+		                   cornerRadius: 8,
+		                   callbacks: {
+		                       label: function(context) {
+		                           return `得分：${context.raw}`;
+		                       }
+		                   }
+		               },
+		               legend: {
+		                   display: false
+		               }
+		           }
+		       },
+		       // 这个插件会在柱状图顶部显示数值
+		       plugins: [{
+		           id: 'displayValues',
+		           afterDraw: function(chart) {
+		               const ctx = chart.ctx;
+		               chart.data.datasets.forEach(function(dataset, index) {
+		                   const meta = chart.getDatasetMeta(index);
+		                   if (!meta.hidden) {
+		                       meta.data.forEach(function(element, index) {
+		                           // 设置文字样式
+		                           ctx.fillStyle = '#1E293B';
+		                           ctx.font = 'bold 14px Inter, sans-serif';
+		                           ctx.textAlign = 'center';
+		                           
+		                           // 计算文字位置（在柱子顶部）
+		                           const yPosition = element.y - 10;
+		                           const xPosition = element.x;
+		                           
+		                           // 绘制数值
+		                           ctx.fillText(dataset.data[index], xPosition, yPosition);
+		                       });
+		                   }
+		               });
+		           }
+		       }]
+		   });
+		   
+		   
+            // 滚动到图表区域
+            document.querySelector('.chart-container').scrollIntoView({
+                behavior: 'smooth'
+            });
+        });
+
+        // 页面加载时初始化进度
+        window.addEventListener('load', updateProgress);
+    </script>
+</body>
+</html>
